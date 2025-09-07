@@ -1,0 +1,132 @@
+#lang racket
+
+;; ============================================================
+;; Taller 1 - Fundamentos de Interpretación y Compilación de LP
+;; Integrantes:
+;; Juan Esteban Rodriguez Valencia - 2042282
+;; Juan Pablo Charry - Código2
+;; Juan Felipe Palechor - Código3
+;; ============================================================
+
+;; ============================================================
+;; Ejercicio 1 - invert
+;; ------------------------------------------------------------
+;; Proposito:
+;;   Recibe una lista de pares (x y) y un predicado P.
+;;   Retorna una lista con los pares invertidos (y x) 
+;;   cuando ambos cumplen el predicado P.
+;; Contrato:
+;;   (invert L P) -> L'
+;; Gramática BNF:
+;;   <lista> := ()
+;;            | (<par> <lista>)
+;;   <par>   := (x y)
+;; Pruebas:
+;;   > (invert '((3 2) (4 2) (1 5) (2 8)) even?) => ((2 4) (8 2))
+;; ============================================================
+(define (invert L P)
+  'TODO)
+
+
+;; ============================================================
+;; Ejercicio 2 - down
+;; ------------------------------------------------------------
+;; Proposito: 
+;;   Recibe una lista L y retorna una lista con un nivel más 
+;;   de paréntesis para cada elemento.
+;; Contrato:
+;;   (down L) -> L'
+;; Pruebas:
+;;   > (down '(1 2 3)) => ((1) (2) (3))
+;; ============================================================
+(define (down L)
+  'TODO)
+
+
+;; ============================================================
+;; Ejercicio 3 - list-set
+;; ------------------------------------------------------------
+;; Proposito:
+;;   Reemplaza el elemento en la posición n de L por x solo si
+;;   cumple con el predicado P.
+;; Contrato:
+;;   (list-set L n x P) -> L'
+;; ============================================================
+(define (list-set L n x P)
+  'TODO)
+
+
+;; ============================================================
+;; Ejercicio 4 - filter-in
+(define (filter-in P L)
+  'TODO)
+
+;; ============================================================
+;; Ejercicio 5 - list-index
+(define (list-index P L)
+  'TODO)
+
+;; ============================================================
+;; Ejercicio 6 - swapper
+(define (swapper E1 E2 L)
+  'TODO)
+
+;; ============================================================
+;; Ejercicio 7 - cartesian-product
+(define (cartesian-product L1 L2)
+  'TODO)
+
+;; ============================================================
+;; Ejercicio 8 - mapping
+(define (mapping F L1 L2)
+  'TODO)
+
+;; ============================================================
+;; Ejercicio 9 - inversions
+(define (inversions L)
+  'TODO)
+
+;; ============================================================
+;; Ejercicio 10 - up
+(define (up L)
+  'TODO)
+
+;; ============================================================
+;; Ejercicio 11 - zip
+(define (zip F L1 L2)
+  'TODO)
+
+;; ============================================================
+;; Ejercicio 12 - filter-acum
+(define (filter-acum a b F acum filter)
+  'TODO)
+
+;; ============================================================
+;; Ejercicio 13 - operate
+(define (operate lrators lrands)
+  'TODO)
+
+;; ============================================================
+;; Ejercicio 14 - path
+(define (path n BST)
+  'TODO)
+
+;; ============================================================
+;; Ejercicio 15 - count-odd-and-even
+(define (count-odd-and-even arbol)
+  'TODO)
+
+;; ============================================================
+;; Ejercicio 16 - simpson-rule
+(define (simpson-rule f a b n)
+  'TODO)
+
+;; ============================================================
+;; Ejercicio 17 - prod-scalar-matriz
+(define (prod-scalar-matriz mat vec)
+  'TODO)
+
+;; ============================================================
+;; Ejercicio 18 - pascal
+(define (pascal N)
+  'TODO)
