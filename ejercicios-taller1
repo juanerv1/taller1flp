@@ -1,10 +1,10 @@
-#lang racket
+#lang eopl
 
 ;; ============================================================
 ;; Taller 1 - Fundamentos de Interpretación y Compilación de LP
 ;; Integrantes:
 ;; Juan Esteban Rodriguez Valencia - 2042282
-;; Juan Pablo Charry - Código2
+;; Juan Pablo Charry - 2040579
 ;; Juan Felipe Palechor - Código3
 ;; ============================================================
 
@@ -68,23 +68,111 @@
 
 ;; ============================================================
 ;; Ejercicio 6 - swapper
-(define (swapper E1 E2 L)
-  'TODO)
+;; ------------------------------------------------------------
+;; Contrato:
+;;   swapper : S S (Listof Any) -> (Listof Any)
+;; Propósito:
+;;   Dada una lista L, reemplaza cada ocurrencia de e1 por e2 y cada
+;;   ocurrencia de e2 por e1. Otros elementos quedan iguales.
+;; Gramática BNF:
+;;   <lista> ::= '() | (cons <valor> <lista>)
+;; Ejemplos:
+;;   (swapper 'a 'd '(a b c d))                 => (d b c a)
+;;   (swapper 'a 'd '(a d () c d))              => (d a () c a)
+;;   (swapper 'x 'y '(y y x y x y x x y))       => (x x y x y x y y x)
+
+(define (swapper e1 e2 L)
+  (if (null? L)
+      '()
+      (let ([x (car L)])
+        (cons (if (equal? x e1)
+                  e2
+                  (if (equal? x e2) e1 x))
+              (swapper e1 e2 (cdr L))))))
+
 
 ;; ============================================================
 ;; Ejercicio 7 - cartesian-product
+;; Contrato:
+;;  cartesian-product : (Listof Symbol) (Listof Any) -> (Listof (List Any Any))
+;; Propósito:
+;;   Dadas L1 y L2, produce el producto cartesiano como lista de pares
+;;   (a b) con a∈L1 y b∈L2.
+;; Gramática BNF:
+;;   <lista-simbolos> ::= '() | (cons <simbolo> <lista-simbolos>)
+;;   <par>            ::= (list <a> <b>)
+;; Ejemplos:
+;;   (cartesian-product '(a b c) '(x y))
+;;     => ((a x) (a y) (b x) (b y) (c x) (c y))
+;;   (cartesian-product '(p q r) '(5 6 7))
+;;     => ((p 5) (p 6) (p 7) (q 5) (q 6) (q 7) (r 5) (r 6) (r 7))
+
 (define (cartesian-product L1 L2)
-  'TODO)
+  ;; Construye pares con a y toda L2, pegando al "tail" sin append.
+  (define (pairs-with a l2 tail)
+    (if (null? l2)
+        tail
+        (cons (list a (car l2))
+              (pairs-with a (cdr l2) tail))))
+  ;; Recorre L1 y encadena resultados de cada a con la recursión del resto.
+  (define (outer l1)
+    (if (null? l1)
+        '()
+        (pairs-with (car l1) L2 (outer (cdr l1)))))
+  (outer L1))
 
 ;; ============================================================
 ;; Ejercicio 8 - mapping
+;; ---------------------------------------------------------
+;; Contrato:
+;;   mapping : (Any -> Number) (Listof Any) (Listof Number) -> (Listof (List Any Number))
+;; Propósito:
+;;   Dados F, L1 y L2 (de igual tamaño), produce pares (a b) donde
+;;   F(a) = b. Se recorre y filtra manualmente.
+;; Gramática BNF:
+;;   <lista-numeros> ::= '() | (cons <numero> <lista-numeros>)
+;;   <par>           ::= (list <a> <b>)
+;; Ejemplos:
+;;   (mapping (lambda (d) (* d 2)) '(1 2 3) '(2 4 6))
+;;     => ((1 2) (2 4) (3 6))
+;;   (mapping (lambda (d) (* d 3)) '(1 2 2) '(2 4 6))
+;;     => ((2 6))
+;;   (mapping (lambda (d) (* d 2)) '(1 2 3) '(3 9 12))
+;;     => ()
 (define (mapping F L1 L2)
-  'TODO)
+  (if (or (null? L1) (null? L2))
+      '()
+      (let* ([a (car L1)]
+             [b (car L2)]
+             [rest (mapping F (cdr L1) (cdr L2))])
+        (if (= (F a) b)
+            (cons (list a b) rest)
+            rest))))
 
 ;; ============================================================
 ;; Ejercicio 9 - inversions
+;; ---------------------------------------------------------
+;; Contrato:
+;;   inversions : (Listof Number) -> Natural
+;; Propósito:
+;;   Cuenta el número de inversiones en L: pares (i,j) con i<j y a_i > a_j.
+;;   Se asume que los números son distintos.
+;; Gramática BNF:
+;;   <lista-numeros-distintos> ::= '() | (cons <numero> <lista-numeros-distintos>)
+;; Ejemplos:
+;;   (inversions '(2 3 8 6 1)) => 5
+;;   (inversions '(1 2 3 4))   => 0
+;;   (inversions '(3 2 1))     => 3
 (define (inversions L)
-  'TODO)
+  (define (count-less-than x ls)
+    (if (null? ls)
+        0
+        (+ (if (> x (car ls)) 1 0)
+           (count-less-than x (cdr ls)))))
+  (if (null? L)
+      0
+      (+ (count-less-than (car L) (cdr L))
+         (inversions (cdr L)))))
 
 ;; ============================================================
 ;; Ejercicio 10 - up
@@ -113,13 +201,67 @@
 
 ;; ============================================================
 ;; Ejercicio 15 - count-odd-and-even
+;; ---------------------------------------------------------
+;; Representación de árbol binario:
+;;   '()                      ; árbol vacío
+;;   (list n left right)      ; nodo con número n y subárboles
+;;
+;; Contrato:
+;;   count-odd-and-even : <arbol-binario> -> (list Natural Natural)
+;; Propósito:
+;;   Dado un árbol binario con números en sus nodos, retorna (pares impares).
+;; Gramática BNF:
+;;   <arbol-binario> ::= '()
+;;                     |  (list <numero> <arbol-binario> <arbol-binario>)
+;; Ejemplo:
+;;   (count-odd-and-even
+;;     '(14 (7 () (12 () ()))
+;;          (26 (20 (17 () ()) ())
+;;              (31 () ()))))
+;;   => (4 3)
 (define (count-odd-and-even arbol)
-  'TODO)
+  (if (null? arbol)
+      (list 0 0)
+      (let* ([n (car arbol)]
+             [L (cadr arbol)]
+             [R (caddr arbol)]
+             [curr (if (even? n) (list 1 0) (list 0 1))]
+             [left (count-odd-and-even L)]
+             [right (count-odd-and-even R)])
+        (list (+ (car curr) (car left) (car right))
+              (+ (cadr curr) (cadr left) (cadr right))))))
+
 
 ;; ============================================================
 ;; Ejercicio 16 - simpson-rule
+;; ---------------------------------------------------------
+;; Contrato:
+;;   simpson-rule : (Real -> Real) Real Real (and/c Integer even?) -> Real
+;; (Nota: El contrato textual de arriba es conceptual; en código verificamos n par)
+;; Propósito:
+;;   Aproxima ∫_a^b f(x) dx usando la regla de Simpson con n subintervalos
+;;   (n debe ser PAR). 
+;; Gramática BNF:
+;;   n ∈ 2ℕ, h = (b - a) / n, y_k = f(a + k*h)
+;;   S = (h/3) * (y0 + 4y1 + 2y2 + ... + 4y_{n-1} + yn)
+;; Ejemplos:
+;;   (simpson-rule (lambda (x) (* x (* x x))) 1 5 8)  => 156
+;;   (simpson-rule (lambda (x) x) 1 5 12)             => 12
 (define (simpson-rule f a b n)
-  'TODO)
+  (if (odd? n)  ;; Si n no es par
+      'error    ;; Retorna un valor 'error si n es impar
+      (let* ([h (/ (- b a) n)])   ;; Si n es par, continua el cálculo
+        (define (yk k) (f (+ a (* k h))))
+        (define (peso k)
+          (if (or (= k 0) (= k n))
+              1
+              (if (odd? k) 4 2)))
+        (define (sumatoria k)
+          (if (> k n)
+              0
+              (+ (* (peso k) (yk k))
+                 (sumatoria (+ k 1)))))
+        (* (/ h 3) (sumatoria 0))))) 
 
 ;; ============================================================
 ;; Ejercicio 17 - prod-scalar-matriz
