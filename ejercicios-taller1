@@ -199,23 +199,161 @@
 
 ;; ============================================================
 ;; Ejercicio 10 - up
-(define (up L)
-  'TODO)
+;; ------------------------------------------------------------
+;; Proposito:
+;;   Recibe una lista L y elimina un nivel de paréntesis en el
+;;   nivel más alto. Si un elemento de ese nivel no es lista,
+;;   se incluye sin modificarlo.
+;;
+;; Contrato:
+;;   (up L) -> L'
+;;
+;; Gramática BNF:
+;;   <lista>    := ()
+;;              := (<elemento> <lista>)
+
+;;   <elemento> := <valor>
+;;              := <lista>
+;;
+;; Se crea la funcion recursiva concat que se encarga de unir 2 listas
+
+(define up
+  (lambda (L)
+    (letrec
+        ([concat
+          (lambda (front back)
+            (if (null? front)
+                back
+                (cons (car front) (concat (cdr front) back))))])
+    (cond
+      [(null? L) '()]
+      [(list? (car L))
+       (concat (car L) (up (cdr L)))]
+      [else
+       (cons (car L) (up (cdr L)))]))))
+
+;; Pruebas:
+"Pruebas up"
+(up '((1 2) (3 4)))               ; ((1 2) (3 4)) => (1 2 3 4)
+(up '((x (y)) z))                 ; ((x (y)) z)   => (x (y) z)
+(up '((1 2) (3 4) (5 6) (7 8)))   ; ((1 2) (3 4) (5 6) (7 8)))  => (1 2 3 4 5 6 7 8)
+(up '((1 2 3 4) (6 (7 8 (9)) 10))); ((1 2 3 4) (6 (7 8 (9)) 10)) => (1 2 3 4 6 (7 8 (9))10)
+(up '(1 (2 3)))                   ; (1 (2 3)) => (1 2 3)
+
+
 
 ;; ============================================================
 ;; Ejercicio 11 - zip
-(define (zip F L1 L2)
-  'TODO)
+;; ------------------------------------------------------------
+;; Proposito:
+;;   Recibe una función binaria F y dos listas L1 y L2 del mismo
+;;   tamaño. Retorna una lista donde cada posición n contiene el
+;;   resultado de aplicar F al elemento n de L1 y al elemento n
+;;   de L2.
+;;
+;; Contrato:
+;;   (zip F L1 L2) -> L'
+;;
+;; Gramática BNF:
+;;   <lista>    := ()
+;;              := (<elemento> <lista>)
+;;
+;;   <elemento> := <valor>
+;;
 
+(define zip
+  (lambda (f L1 L2)
+    (if (null? L1)
+        '()
+    (cons (f (car L1) (car L2)) (zip f (cdr L1) (cdr L2))))
+    ))
+
+;;Pruebas:
+"Pruebas zip"
+(zip + '(1 4) '(6 2))         ; (7 6)
+(zip * '(11 5 6) '(10 9 8))   ; (110 45 48)
+(zip / '(4 8) '(2 4))         ; (2 2)
+(zip - '(10 20 30) '(2 7 27)) ; (8 13 3)
+(zip equal? '(10 20 30) '(12 20 15)) ; '(#f #t #f)
+
+
+;; ============================================================
 ;; ============================================================
 ;; Ejercicio 12 - filter-acum
-(define (filter-acum a b F acum filter)
-  'TODO)
+;; ------------------------------------------------------------
+;; Proposito:
+;;   Recorre todos los números en el intervalo [a, b] y aplica
+;;   la función binaria f acumulativamente sobre aquellos números
+;;   que cumplen con el predicado filter. Retorna el valor final
+;;   acumulado.
+;;
+;; Contrato:
+;;   (filter-acum a b f acum filter) -> número
+;;
+;; Gramática BNF:
+;;   <intervalo> := a b
+;;   <f>         := función binaria (acum x -> nuevo-acum)
+;;   <filter>    := función unaria (x -> booleano)
+;;
 
+
+(define filter-acum
+  (lambda (a b f acum filter)
+    (letrec
+        ([cicle
+          (lambda (start finish acum)
+            (if (> start finish)
+                acum
+                (if (filter start)
+                    (cicle (+ start 1) finish (f acum start))
+                    (cicle (+ start 1) finish acum))))])
+      (cicle a b acum))))
+          
+"Pruebas filter-acum"
+(filter-acum 1 10 + 0 odd?)    ; 1+3+5+7+9
+(filter-acum 1 10 + 0 even?)   ; 2+4+6+8+10
+(filter-acum 1 5 * 1 odd?)     ; 1*3*5
+(filter-acum 1 8 * 1 even?)    ; 2*4*6*8
+(filter-acum 1 30 + 0 odd?)    ; 1+3+5+7+9+11+13+15+17+19+21+23+25+27+29
 ;; ============================================================
 ;; Ejercicio 13 - operate
-(define (operate lrators lrands)
-  'TODO)
+;; ------------------------------------------------------------
+;; Proposito:
+;;   Recibe una lista de funciones binarias (lrators) de tamaño n y
+;;   una lista de números (lrands) de tamaño n+1. Aplica sucesivamente
+;;   cada función en lrators sobre los elementos de lrands, en orden,
+;;   acumulando el resultado de izquierda a derecha.
+;;
+;; Contrato:
+;;   (operate lrators lrands) -> número
+;;
+;; Gramática BNF:
+;;   <lrators> := ()
+;;             := (<operador> <lrators>)
+;;
+;;   <lrands>  := (<número>)
+;;             := (<número> <lrands>)
+;;
+
+
+(define operate
+  (lambda (lrators lrands)
+    (letrec
+        [(cicle
+          (lambda (lrators-rest lrands-rest acum)
+            (if (null? lrators-rest)
+                acum
+                (cicle (cdr lrators-rest)
+                       (cdr lrands-rest)
+                       ((car lrators-rest) acum (car lrands-rest))))))]
+      (cicle lrators (cdr lrands)(car lrands)))))
+
+"Pruebas:"
+(operate (list + * + - *) '(1 2 8 4 11 6)) ;=> 102
+(operate (list *) '(4 5))                  ;=> 20
+(operate (list * * * * * *) '(1 2 3 4 5 6 7));=> 5040
+(operate (list + - + - + -) '(4 2 6 5 9 2 -2));=> 0
+(operate (list + - ) '(4 2 20)); -14
 
 ;; ============================================================
 ;; Ejercicio 14 - path
@@ -303,10 +441,83 @@
 
 ;; ============================================================
 ;; Ejercicio 17 - prod-scalar-matriz
-(define (prod-scalar-matriz mat vec)
-  'TODO)
+;; ------------------------------------------------------------
+;; Proposito:
+;;   Recibe una matriz mat (lista de listas) y un vector vec (lista),
+;;   y retorna una nueva matriz resultante de multiplicar cada fila
+;;   de mat por el vector vec, elemento a elemento.
+;;
+;; Contrato:
+;;   (prod-scalar-matriz mat vec) -> matriz
+;;
+;; Gramática BNF:
+;;   <matriz> := ()
+;;             | (<fila> <matriz>)
+;;
+;;   <fila>   := ()
+;;             | (<número> <fila>)
+;;
+;; NOTA:
+;; Se hace uso de la funcion zip creada en el Eje. 11
+
+
+(define prod-scalar-matriz
+  (lambda (mat vec)
+    (if (null? mat)
+        '()
+        (cons (zip * (car mat) vec)
+              (prod-scalar-matriz (cdr mat) vec)))))
+
+"Pruebas prod-scalar-matriz"
+
+(prod-scalar-matriz '((1 0 0) (0 1 0)(0 0 1)) '(3 5 8)); => ((3 0 0) (0 5 0) (0 0 8))
+(prod-scalar-matriz '((1 2 3) (3 2 1)(1 1 1)) '(3 5 8)); => ((3 10 24) (9 10 8) (3 5 8))
+(prod-scalar-matriz '((1 1) (2 2) (3 3)) '(2 3)) ;=> ((2 3) (4 6) (6 9))
 
 ;; ============================================================
 ;; Ejercicio 18 - pascal
-(define (pascal N)
-  'TODO)
+;; ------------------------------------------------------------
+;; Proposito:
+;;   Genera la fila N del triángulo de Pascal. La fila 1 es (1).
+;;   Cada fila se construye sumando los elementos adyacentes de la
+;;   fila anterior, precedidos y seguidos de un 0.
+;;
+;; Contrato:
+;;   (pascal N) -> lista
+;;
+;; Gramática BNF:
+;;   <fila> := (1)
+;;          := (<número> <fila>)
+;;
+;;
+;; Nota:
+;;  Se hace uso de la funcion zip creada en el Eje. 11
+;;  Se crea la funcion recursiva concat que se encarga de unir las listas
+
+(define pascal
+  (lambda (N)
+    (letrec
+        ([concat
+          (lambda (front back)
+            (if (null? front)
+                back
+                (cons (car front) (concat (cdr front) back))))]
+
+         [cicle
+          (lambda (fila contador)
+            (if (< contador N)
+                (cicle (zip + (concat '(0) fila)
+                               (concat fila '(0)))
+                       (+ contador 1))
+                fila))])
+      (cicle '(1) 1))))
+
+"Pruebas Pascal:"
+(pascal 1)
+(pascal 2)
+(pascal 3)
+(pascal 4)
+(pascal 5)
+(pascal 6)
+(pascal 7)
+(pascal 8)
